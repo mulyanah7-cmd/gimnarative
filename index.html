@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Eco Argument Quest: Selamatkan Pulau Hijau</title>
+<style>
+:root{
+  --ink:#16352b;--ink2:#35594b;--leaf:#2f9e6b;--leaf-d:#1f7a52;--mint:#d9f3e4;--sky1:#bfe8f5;--sky2:#eaf8f0;
+  --sun:#ffc93c;--sun-d:#e5a712;--coral:#ef6a5b;--paper:#fffdf6;--line:#cfe5d8;--lock:#9db3a8;--water:#6cc3e0;
+  --r:16px;--shadow:0 8px 24px rgba(22,53,43,.18);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;color:var(--ink);background:linear-gradient(180deg,var(--sky1),var(--sky2) 60%,#d8efc9);}
+button{font:inherit;cursor:pointer}
+.screen{display:none;min-height:100vh;padding:16px}
+.screen.on{display:block}
+.wrap{max-width:1080px;margin:0 auto}
+.card{background:var(--paper);border-radius:var(--r);box-shadow:var(--shadow);padding:20px}
+.btn{border:0;border-radius:999px;padding:12px 24px;font-weight:700;color:#fff;background:var(--leaf);box-shadow:0 4px 0 var(--leaf-d);transition:transform .08s}
+.btn:hover{filter:brightness(1.06)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--leaf-d)}
+.btn.sun{background:var(--sun);color:var(--ink);box-shadow:0 4px 0 var(--sun-d)}
+.btn.ghost{background:#fff;color:var(--ink);box-shadow:0 4px 0 var(--line);border:2px solid var(--line)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.sm{padding:8px 16px;font-size:.9rem}
+h1,h2,h3{margin:.2em 0}
+/* Title */
+#s-title .hero{max-width:720px;margin:6vh auto 0;text-align:center}
+.logo{font-size:4rem;line-height:1}
+.hero h1{font-size:clamp(2rem,6vw,3.2rem);color:var(--leaf-d);text-shadow:0 3px 0 #fff}
+.hero .sub{font-size:1.15rem;color:var(--ink2);margin:.3em 0 1.2em}
+.story{text-align:left;margin:1rem 0;line-height:1.55}
+.hero input{width:100%;max-width:360px;padding:12px 16px;border-radius:999px;border:2px solid var(--line);font-size:1.05rem;text-align:center;margin:.4rem 0 1rem}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+/* HUD */
+.hud{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between;margin-bottom:12px}
+.pill{background:#fff;border-radius:999px;padding:8px 16px;font-weight:700;box-shadow:0 2px 8px rgba(22,53,43,.12);display:inline-flex;gap:6px;align-items:center}
+.pill small{font-weight:400;color:var(--ink2)}
+/* Map */
+.mapbox{overflow-x:auto;border-radius:var(--r);box-shadow:var(--shadow);background:#bfe8f5}
+.mapbox svg{display:block;width:100%;min-width:760px;height:auto}
+.node{cursor:pointer}
+.node.locked{cursor:not-allowed}
+.node .pulse{animation:pulse 1.6s ease-in-out infinite;transform-origin:center;transform-box:fill-box}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.55}50%{transform:scale(1.35);opacity:0}}
+.avatar{animation:bob 1.1s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.cloud{animation:drift 60s linear infinite}
+@keyframes drift{from{transform:translateX(-200px)}to{transform:translateX(1200px)}}
+.legend{margin-top:10px;font-size:.9rem;color:var(--ink2)}
+/* Modal */
+#modal{position:fixed;inset:0;background:rgba(10,40,30,.55);display:none;align-items:center;justify-content:center;padding:14px;z-index:50}
+#modal.on{display:flex}
+.sheet{background:var(--paper);border-radius:20px;max-width:640px;width:100%;max-height:92vh;overflow:auto;padding:24px;box-shadow:var(--shadow);animation:pop .25s ease}
+@keyframes pop{from{transform:scale(.92);opacity:0}to{transform:none;opacity:1}}
+.sheet h2{color:var(--leaf-d)}
+.sheet ul{padding-left:1.2rem;line-height:1.55}
+.chip{display:inline-block;background:var(--mint);color:var(--leaf-d);border-radius:999px;padding:3px 12px;font-size:.85rem;font-weight:700;margin:2px 4px 2px 0}
+.big{font-size:3rem;text-align:center}
+/* Quiz */
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.bar{height:12px;background:#fff;border-radius:99px;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.15);margin:6px 0 14px}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--leaf),#7ed957);transition:width .4s}
+.bar.boss>i{background:linear-gradient(90deg,#ff6b5b,#ffb347)}
+.qtext{font-size:1.2rem;line-height:1.5;margin:.3em 0 1em}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:#fff;border:2px solid var(--line);border-radius:14px;padding:12px 14px;margin:8px 0;font-size:1.02rem;color:var(--ink)}
+.opt:hover{border-color:var(--leaf)}
+.opt .k{flex:none;width:28px;height:28px;border-radius:50%;background:var(--mint);display:grid;place-items:center;font-weight:700;color:var(--leaf-d)}
+.opt.sel{border-color:var(--leaf);background:#eefaf3}
+.opt.good{border-color:var(--leaf);background:#d9f3e4}
+.opt.bad{border-color:var(--coral);background:#ffe5e1}
+.opt[disabled]{cursor:default}
+.fb{margin-top:14px;border-radius:14px;padding:14px 16px;line-height:1.5}
+.fb.ok{background:#d9f3e4;border:2px solid var(--leaf)}
+.fb.no{background:#ffe5e1;border:2px solid var(--coral)}
+.note{color:var(--ink2);font-size:.92rem;margin:.4rem 0}
+.passage{background:#fff;border-left:6px solid var(--leaf);border-radius:10px;padding:14px 16px;line-height:1.8;margin:10px 0}
+.blank{display:inline-block;min-width:120px;min-height:34px;border:2px dashed var(--lock);border-radius:10px;padding:2px 10px;margin:0 3px;text-align:center;vertical-align:middle;background:#f4fbf7;color:var(--ink);font-weight:700}
+.blank.over{border-color:var(--leaf);background:#e3f7ea}
+.blank.good{border:2px solid var(--leaf);background:#d9f3e4}
+.blank.bad{border:2px solid var(--coral);background:#ffe5e1;animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.bank{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;min-height:44px;padding:10px;border-radius:12px;background:#eef6f1}
+.word{background:var(--sun);border-radius:10px;padding:6px 14px;font-weight:700;border:0;box-shadow:0 3px 0 var(--sun-d);cursor:grab;user-select:none}
+.word.sel{outline:3px solid var(--leaf)}
+.mrow{display:grid;grid-template-columns:1.4fr 1fr;gap:10px;align-items:center;background:#fff;border:2px solid var(--line);border-radius:12px;padding:10px;margin:8px 0}
+.mrow.good{border-color:var(--leaf);background:#d9f3e4}
+.mrow.bad{border-color:var(--coral);background:#ffe5e1}
+.mrow select{padding:8px;border-radius:10px;border:2px solid var(--line);font:inherit;width:100%}
+@media(max-width:600px){.mrow{grid-template-columns:1fr}}
+.orow{display:flex;gap:8px;align-items:center;background:#fff;border:2px solid var(--line);border-radius:12px;padding:10px;margin:8px 0;line-height:1.45}
+.orow.good{border-color:var(--leaf);background:#d9f3e4}
+.orow.bad{border-color:var(--coral);background:#ffe5e1}
+.orow .n{flex:none;width:28px;height:28px;border-radius:50%;background:var(--sun);display:grid;place-items:center;font-weight:700}
+.orow .t{flex:1}
+.orow .mv{display:flex;flex-direction:column;gap:4px}
+.orow .mv button{border:0;background:var(--mint);border-radius:8px;padding:2px 10px;color:var(--leaf-d)}
+.tf{display:flex;gap:12px;margin-top:6px}
+.tf .opt{justify-content:center;font-weight:700;font-size:1.1rem}
+/* Boss */
+.boss-head{display:flex;gap:14px;align-items:center}
+.boss-head .face{font-size:3.4rem}
+.rubric{width:100%;border-collapse:collapse;margin:8px 0;font-size:.93rem}
+.rubric td,.rubric th{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+textarea{width:100%;min-height:130px;border-radius:12px;border:2px solid var(--line);padding:12px;font:inherit;line-height:1.5;resize:vertical}
+.key{background:#fff8dc;border:2px solid var(--sun);border-radius:12px;padding:12px 14px;margin:10px 0;line-height:1.55}
+.lvl{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.lvl button{flex:1;min-width:120px}
+/* Final */
+.cert{text-align:center;border:6px double var(--leaf);background:#fff;border-radius:18px;padding:28px 18px}
+.cert .name{font-size:2rem;font-weight:800;color:var(--leaf-d);margin:.2em 0}
+.badges{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0}
+.badge{background:var(--mint);border-radius:14px;padding:8px 12px;font-weight:700;font-size:.9rem}
+.badge.off{opacity:.35;filter:grayscale(1)}
+.devphoto{width:130px;height:130px;border-radius:50%;object-fit:cover;border:5px solid var(--leaf);margin:0 auto;display:grid;place-items:center;background:var(--mint);font-size:2.6rem;font-weight:800;color:var(--leaf-d);overflow:hidden}
+.devphoto img{width:100%;height:100%;object-fit:cover}
+footer{text-align:center;color:var(--ink2);font-size:.85rem;margin:18px 0 6px}
+
+.audioctl{position:fixed;right:12px;bottom:12px;display:flex;gap:6px;z-index:60}
+.audioctl button{width:46px;height:46px;border-radius:50%;border:2px solid var(--line);background:#fff;font-size:1.3rem;box-shadow:var(--shadow)}
+.audioctl button.off{opacity:.55;filter:grayscale(1)}
+.pcard{background:var(--paper);border:2px solid var(--line);border-radius:var(--r);padding:18px;margin-top:14px}
+.pcard .tag{display:inline-block;background:var(--ink);color:#fff;border-radius:8px;padding:2px 10px;font-weight:800;font-size:.8rem;letter-spacing:.04em}
+.pcard h3{color:var(--leaf-d);margin:.4em 0 .2em}
+.pcard pre{white-space:pre-wrap;word-break:break-word;background:#f1f8f3;border-radius:12px;padding:14px;font:inherit;font-size:.92rem;line-height:1.55;max-height:340px;overflow:auto;margin:10px 0 0}
+@media print{
+  .audioctl{display:none!important}
+  body{background:#fff}
+  .screen,#modal,footer{display:none!important}
+  #s-final{display:block!important;padding:0}
+  #s-final .noprint{display:none!important}
+  #s-final .card{box-shadow:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+
+<!-- TITLE -->
+<section id="s-title" class="screen on">
+  <div class="hero card">
+    <div class="logo">🌏🌿</div>
+    <h1>Eco Argument Quest</h1>
+    <div class="sub">Selamatkan Pulau Hijau dengan Analytical Exposition</div>
+    <div class="row"><span class="chip">Bahasa Inggris</span><span class="chip">Fase F / Kelas 11</span><span class="chip">Love Your Environment</span></div>
+    <p class="story">Pulau Hijau terancam sampah plastik, polusi udara, dan penebangan hutan. Dewan Pulau hanya mau bertindak jika ada <b>argumen tertulis yang meyakinkan</b>. Jadilah <b>Eco Debater</b>: kumpulkan Kristal Argumen di enam zona, lalu bela pulau ini di Sidang Dewan Pulau!</p>
+    <input id="nameIn" maxlength="40" placeholder="Tulis namamu, Eco Debater..." autocomplete="off">
+    <div class="row">
+      <button class="btn sun" id="btnStart">▶ Mulai Petualangan</button>
+      <button class="btn ghost" id="btnRules1">📜 Aturan Main</button>
+      <button class="btn ghost" id="btnPrompt1">📚 Bank Prompt</button>
+      <button class="btn ghost" id="btnDev1">👩‍🏫 Developer</button>
+    </div>
+    <p class="note" id="contNote"></p>
+  </div>
+</section>
+
+<!-- MAP -->
+<section id="s-map" class="screen">
+  <div class="wrap">
+    <div class="hud">
+      <div class="row" style="justify-content:flex-start">
+        <span class="pill" id="hName">🌱 —</span>
+        <span class="pill">⭐ <span id="hPts">0</span> <small>/ 1000</small></span>
+        <span class="pill">💎 <span id="hCry">0</span> <small>/ 6 Kristal</small></span>
+      </div>
+      <div class="row">
+        <button class="btn ghost sm" id="btnRules2">📜 Aturan</button>
+        <button class="btn ghost sm" id="btnDev2">👩‍🏫 Developer</button>
+                <button class="btn ghost sm" id="btnReset">↺ Ulangi dari awal</button>
+      </div>
+    </div>
+    <div class="mapbox"><svg id="mapSvg" viewBox="0 0 1000 640" role="img" aria-label="Peta Pulau Hijau dengan tujuh zona"></svg></div>
+    <div id="promptSlot"></div>
+    <p class="legend">Klik zona yang bercahaya untuk bermain. Zona terbuka berurutan; Istana Dewan Pulau terbuka setelah kamu memegang 6 Kristal Argumen.</p>
+  </div>
+</section>
+
+<!-- QUIZ / BOSS -->
+<section id="s-quiz" class="screen">
+  <div class="wrap" style="max-width:820px">
+    <div class="card">
+      <div class="qhead">
+        <div><b id="qZone"></b> <span class="chip" id="qType"></span></div>
+        <div><span id="qHearts" aria-label="Nyawa"></span></div>
+      </div>
+      <div class="bar" id="qBarWrap"><i id="qBar" style="width:0"></i></div>
+      <div id="qBody"></div>
+    </div>
+    <div class="row" style="margin-top:12px"><button class="btn ghost sm" id="btnBack">← Kembali ke peta</button></div>
+  </div>
+</section>
+
+<!-- FINAL -->
+<section id="s-final" class="screen">
+  <div class="wrap" style="max-width:760px">
+    <div class="card cert" id="cert">
+      <div class="big">🏆</div>
+      <h2>Sertifikat Eco Debater</h2>
+      <p>Dengan bangga diberikan kepada</p>
+      <div class="name" id="fName"></div>
+      <p>karena telah menuntaskan <b>Eco Argument Quest</b> (Analytical Exposition: Love Your Environment)</p>
+      <div class="big" id="fTitleIcon"></div>
+      <h2 id="fTitle"></h2>
+      <p>Total poin: <b id="fPts"></b> / 1000</p>
+      <div class="badges" id="fBadges"></div>
+      <p class="note" id="fMsg"></p>
+      <p class="note">Developer: Mulyanah, S. Pd. · English Teacher · SMAN 1 Parongpong</p>
+    </div>
+    <div class="row noprint" style="margin-top:14px">
+      <button class="btn sun" id="btnPrint">🖨️ Cetak / Simpan PDF</button>
+      <button class="btn ghost" id="btnFMap">🗺️ Kembali ke peta</button>
+      <button class="btn ghost" id="btnFDev">👩‍🏫 Developer</button>
+    </div>
+  </div>
+</section>
+
+<div class="audioctl"><button id="btnMusic" title="Musik latar" aria-label="Musik latar">🎵</button><button id="btnSfx" title="Efek suara" aria-label="Efek suara">🔊</button></div>
+<div id="modal"><div class="sheet" id="sheet"></div></div>
+<footer>Eco Argument Quest © Mulyanah, S. Pd. · SMAN 1 Parongpong</footer>
+
+<script>
+"use strict";
+/* ==================== DATA ==================== */
+// Ganti nilai berikut dengan foto Anda (data URI base64, mis. "data:image/jpeg;base64,/9j/4AAQ...")
+const DEV_PHOTO = "";
+
+const ZONES = [
+ {name:"Gerbang Hutan Kata", icon:"🚪", type:"Pilihan Ganda", points:100, badge:"Pembuka Gerbang", badgeIcon:"🚪",
+  quest:"Mengenali tujuan sosial Analytical Exposition (meyakinkan pembaca bahwa suatu isu patut diperhatikan) dan membedakannya dari teks lain.",
+  intro:["Analytical Exposition adalah teks yang <b>meyakinkan pembaca</b> bahwa suatu isu penting dipertimbangkan.","Strukturnya: <b>Thesis → Arguments → Reiteration</b>.","Pilih satu jawaban paling tepat. Kamu punya 3 nyawa ❤️."],
+  scroll:["Social function: <i>to persuade the readers that something is the case / an issue deserves attention</i>.","Thesis statement memuat isu dan <b>posisi penulis</b>; bukan sekadar fakta atau ajakan.","Struktur: thesis, arguments (point + elaboration), reiteration.","Topik yang cocok: isu yang bisa diperdebatkan, mis. <i>why schools should reduce plastic waste</i>."],
+  questions:[
+   {t:"mc", q:"What is the social function of an analytical exposition text?", o:["To entertain readers with an imaginary story","To persuade readers that something is the case or an issue deserves attention","To tell readers how to do something step by step","To retell past events in order"], a:1,
+    fb:"Analytical exposition bertujuan meyakinkan pembaca melalui argumen yang logis."},
+   {t:"mc", q:"Which sentence is the best thesis statement for an analytical exposition?", o:["Firstly, plastic waste kills many sea animals.","Plastic bags are made from petroleum.","In my opinion, schools should ban single-use plastic because it harms our environment.","Let us keep our beach clean together."], a:2,
+    fb:"Thesis memuat isu + posisi penulis. Opsi A adalah argumen, B hanya fakta, D adalah ajakan (hortatory)."},
+   {t:"mc", q:"What is the correct generic structure of an analytical exposition?", o:["Orientation, complication, resolution","Thesis, arguments, reiteration","Goal, materials, steps","General statement, description"], a:1,
+    fb:"Thesis → Arguments → Reiteration."},
+   {t:"mc", q:"Which topic is MOST suitable for an analytical exposition?", o:["How to make compost from kitchen waste","My holiday at the beach last month","Why schools should reduce plastic waste","The description of my favourite park"], a:2,
+    fb:"Isu yang dapat diperdebatkan dan butuh argumen cocok untuk eksposisi analitis. A = procedure, B = recount, D = descriptive."}
+  ]},
+ {name:"Lembah Tesis", icon:"🏞️", type:"Pilihan Ganda Kompleks", points:100, badge:"Pemburu Tesis", badgeIcon:"🎯",
+  quest:"Mengidentifikasi isu dan posisi penulis pada thesis statement tentang lingkungan.",
+  intro:["Pada soal ini jawaban benar bisa <b>lebih dari satu</b>.","Centang semua yang benar, lalu tekan <b>Periksa</b>. Jawaban harus lengkap dan tepat.","Kamu punya 3 nyawa ❤️."],
+  scroll:["Thesis yang baik: memperkenalkan isu, menyatakan posisi, dan (opsional) mempreview argumen.","Penanda posisi: <i>In my opinion, I strongly believe that, It is clear that</i>.","Bahasa khas: simple present, modals (<i>should, must</i>), connectives of reasoning (<i>therefore, consequently</i>).","Narasi masa lalu dan seruan perasaan bukan ciri teks ini."],
+  questions:[
+   {t:"mcx", q:"Choose ALL features of a good thesis statement about city air pollution.", o:["It introduces the issue","It shows the writer's position","It previews the arguments that will follow","It tells a childhood story of the writer","It lists steps to solve the problem"], a:[0,1,2],
+    fb:"Thesis: isu + posisi + (preview argumen). Cerita masa kecil dan langkah-langkah bukan bagian thesis."},
+   {t:"mcx", q:"Choose ALL language features that are typical of analytical exposition.", o:["Simple present tense","Modals such as should and must","Connectives of reasoning such as therefore and consequently","Past tense narration of a personal event","Exclamations that express only feelings"], a:[0,1,2],
+    fb:"Simple present, modals, dan connectives of reasoning adalah ciri khasnya."},
+   {t:"mcx", q:"Choose ALL sentences that could serve as a thesis about deforestation.", o:["Deforestation must be stopped immediately because it destroys habitats and worsens climate change.","Trees produce oxygen.","I strongly believe that every school should plant trees to fight deforestation.","Yesterday we planted trees in the school garden.","The government should protect forests through stricter laws, as forests are essential to our future."], a:[0,2,4],
+    fb:"B hanyalah fakta, D adalah recount. Thesis harus memuat posisi penulis."},
+   {t:"mcx", q:"Choose ALL expressions that can introduce the writer's position.", o:["In my opinion","I strongly believe that","Once upon a time","It is clear that","First, you need to prepare"], a:[0,1,3],
+    fb:"\"Once upon a time\" adalah pembuka narasi dan \"First, you need to prepare\" adalah langkah procedure."}
+  ]},
+ {name:"Sungai Argumen", icon:"🌊", type:"Benar / Salah", points:120, badge:"Penyusun Argumen", badgeIcon:"🧱",
+  quest:"Menilai apakah sebuah paragraf memuat point, elaboration, dan evidence yang valid.",
+  intro:["Tentukan apakah pernyataan <b>Benar</b> atau <b>Salah</b>.","Argumen yang kuat = <b>point + elaboration + evidence</b>.","Setiap jawaban salah mengurangi 1 nyawa ❤️."],
+  scroll:["Argumen kuat: <b>point</b> (klaim), <b>elaboration</b> (penjelasan sebab-akibat), <b>evidence</b> (data, penelitian, contoh nyata).","Generalisasi seperti <i>everybody hates...</i> bukan bukti.","Thesis ada di paragraf pembuka; reiteration di akhir.","Tense utama: simple present."],
+  questions:[
+   {t:"tf", q:"The thesis statement is usually placed in the last paragraph.", a:false, fb:"Salah. Thesis berada di paragraf pembuka; reiteration yang ada di akhir."},
+   {t:"tf", q:"Data from a survey or a study can serve as evidence for an argument.", a:true, fb:"Benar. Data dan penelitian adalah bukti yang kuat."},
+   {t:"tf", q:"\"Everybody hates plastic, so it must be banned\" is a strong argument because it needs no evidence.", a:false, fb:"Salah. Itu generalisasi tanpa bukti, bukan argumen yang kuat."},
+   {t:"tf", q:"The reiteration restates the writer's position, usually in different words.", a:true, fb:"Benar. Reiteration menegaskan kembali posisi penulis dengan kata berbeda."},
+   {t:"tf", q:"Analytical exposition is mostly written in the simple past tense.", a:false, fb:"Salah. Teks ini terutama memakai simple present tense."}
+  ]},
+ {name:"Bukit Penghubung", icon:"⛰️", type:"Drag and Drop", points:120, badge:"Perangkai Logika", badgeIcon:"🔗",
+  quest:"Melengkapi teks dengan kata penghubung dan transisi yang tepat agar argumen runtut.",
+  intro:["Seret (atau ketuk kata lalu ketuk celah) untuk melengkapi teks.","Ada <b>satu kata pengecoh</b>.","Setiap kali memeriksa dan masih ada yang salah, 1 nyawa ❤️ berkurang."],
+  scroll:["Urutan argumen: <i>Firstly, Secondly/Moreover, Finally</i>.","Kontras: <i>However</i>. Sebab-akibat: <i>Therefore, Consequently, As a result</i>.","Penutup: <i>In conclusion, To sum up</i>."],
+  questions:[
+   {t:"drag", q:"Complete the text with the correct connectives.",
+    text:"Our school should reduce paper use. {0}, paper production cuts down millions of trees every year. {1}, it consumes a great deal of water and energy. {2}, some people argue that digital devices also create electronic waste. {3}, a good recycling program can solve both problems. {4}, going paperless is a wise choice for our school and our planet.",
+    bank:["Therefore","In conclusion","Firstly","Meanwhile","However","Moreover"], a:["Firstly","Moreover","However","Therefore","In conclusion"],
+    fb:"Urutan: Firstly (argumen 1), Moreover (tambahan), However (kontras), Therefore (akibat), In conclusion (penutup). Meanwhile adalah pengecoh."}
+  ]},
+ {name:"Pantai Fakta & Opini", icon:"🏖️", type:"Menjodohkan", points:130, badge:"Penjaga Fakta", badgeIcon:"🛡️",
+  quest:"Memilah fakta dan opini, serta memadankan modals dan bahasa persuasif dengan fungsinya.",
+  intro:["Jodohkan tiap kalimat dengan fungsi atau jenisnya melalui menu pilihan.","Benar akan terkunci hijau; yang salah kembali dan 1 nyawa ❤️ berkurang."],
+  scroll:["<b>Fakta</b> dapat dibuktikan; <b>opini</b> adalah pandangan penulis.","<i>must</i> = kewajiban kuat; <i>should</i> = saran.","<i>As a result, therefore</i> = penghubung sebab-akibat."],
+  questions:[
+   {t:"match", q:"Match each sentence with its function or type.",
+    left:["Plastic takes hundreds of years to decompose.","In my view, recycling is the most beautiful habit.","Every citizen must separate organic and plastic waste.","The government should provide more recycling bins.","As a result, rivers become cleaner."],
+    right:["Modal saran","Penghubung sebab-akibat","Fakta yang dapat dibuktikan","Modal kewajiban yang kuat","Opini penulis"], a:[2,4,3,0,1],
+    fb:"Fakta: dapat dibuktikan. Opini: pandangan penulis. Must = kewajiban kuat, should = saran, as a result = sebab-akibat."}
+  ]},
+ {name:"Gua Susunan", icon:"🧩", type:"Mengurutkan", points:130, badge:"Arsitek Teks", badgeIcon:"🏗️",
+  quest:"Menyusun ulang kalimat acak menjadi teks utuh: thesis, arguments, reiteration.",
+  intro:["Urutkan kalimat menjadi teks \"Stop Using Single-Use Plastic\" memakai tombol ▲ ▼.","Cari thesis dahulu, lalu argumen berpenanda <i>Firstly/Furthermore/Finally</i>, dan akhiri dengan reiteration.","Pemeriksaan yang salah mengurangi 1 nyawa ❤️."],
+  scroll:["Thesis: kalimat yang berisi posisi, biasanya memakai <i>should</i>.","Argumen: urut dari <i>Firstly → Furthermore → Finally</i>.","Reiteration: diawali <i>In conclusion</i>."],
+  questions:[
+   {t:"order", q:"Put the sentences in the correct order.",
+    items:[
+     {k:"C",t:"In conclusion, banning single-use plastic is a simple step that protects our environment and our health."},
+     {k:"A",t:"Furthermore, plastic waste ends up in the ocean, where fish and turtles swallow it and many of them die."},
+     {k:"B",t:"Single-use plastic should be banned in all schools in our city."},
+     {k:"E",t:"Finally, microplastics can enter our food and eventually harm human health."},
+     {k:"D",t:"Firstly, plastic bags and bottles take hundreds of years to decompose, so they pile up in landfills."}],
+    a:["B","D","A","E","C"],
+    fb:"Urutan: B (thesis), D, A, E (tiga argumen), C (reiteration)."}
+  ]}
+];
+
+const BOSS = {
+  name:"Istana Dewan Pulau", icon:"🏛️", points:300, badge:"Pembela Pulau Hijau",
+  text:["(1) Our canteen should switch from disposable styrofoam boxes to reusable lunch trays.","(2) Firstly, styrofoam is not easily recycled, so every box we throw away stays in the environment for decades.","(3) Secondly, everyone knows that reusable trays are better, so nobody can disagree with this idea.","(4) Thirdly, our school already spends too much money on garbage collection, therefore reusable trays will make our school rich.","(5) In conclusion, disposable boxes are bad."],
+  tasks:[
+   {lv:"C4 Analisis", w:60, q:"Identify the thesis and the writer's position. Which of the three arguments is the strongest, and why?",
+    key:"Tesis pada kalimat (1); posisi penulis mendukung wadah makan yang dapat digunakan ulang. Argumen terkuat adalah argumen (2) karena memuat hubungan sebab-akibat yang logis (styrofoam sulit didaur ulang sehingga bertahan puluhan tahun), meskipun masih perlu data.",
+    hint:"Argumen mana yang punya hubungan sebab-akibat yang masuk akal?"},
+   {lv:"C5 Evaluasi", w:80, q:"Explain the weakness of arguments (3) and (4). Name the problem in each (for example: no evidence, exaggeration, illogical conclusion).",
+    key:"Argumen (3) tidak punya bukti dan bersandar pada klaim umum \"everyone knows\" (bandwagon/generalisasi). Argumen (4) menarik kesimpulan berlebihan: menghemat biaya sampah tidak otomatis \"membuat sekolah kaya\" (exaggeration/illogical conclusion).",
+    hint:"Which argument has no evidence? Which one claims too much?"},
+   {lv:"C6 Perbaiki", w:80, q:"Rewrite argument (4) so that it has a point, an elaboration, and one piece of evidence (you may propose a realistic data source, such as a canteen waste audit). Use at least one connective.",
+    key:"Jawaban bernilai tinggi: klaim terukur (mis. hemat biaya pengangkutan sampah), elaborasi sebab-akibat, dan bukti yang masuk akal (mis. hasil audit sampah kantin selama seminggu) serta bukan angka karangan yang disajikan sebagai fakta. Contoh: \"Thirdly, reusable trays can reduce waste collection costs. Since the canteen throws away hundreds of boxes every week, a one-week waste audit would show how much the school could save. Therefore, ...\"",
+    hint:"Gunakan struktur point → elaboration → evidence."},
+   {lv:"C6 Cipta", w:80, q:"Write a new reiteration (2-3 sentences) that restates the thesis in different words, uses a modal (should or must), and ends with a call for the Council's support.",
+    key:"Parafrasa tesis dengan kata berbeda, ada modal (should/must), ada seruan dukungan, dan tidak memperkenalkan argumen baru. Contoh: \"In conclusion, our canteen should replace disposable boxes with reusable trays to protect the environment. We must act now. Therefore, we ask the Council to support this change.\"",
+    hint:"Ulangi posisi, bukan menambah argumen baru."}
+  ],
+  rubric:[["4","Lengkap, tepat, dan beralasan","100%"],["3","Tepat, alasan kurang kuat","75%"],["2","Sebagian tepat","50%"],["1","Belum tepat","25%"]]
+};
+
+const TITLES=[[850,"Eco Champion","👑"],[700,"Eco Guardian","🛡️"],[550,"Eco Explorer","🧭"],[0,"Eco Cadet","🌱"]];
+
+/* ==================== UTIL ==================== */
+const $=s=>document.querySelector(s);
+function h(tag,props,...kids){const e=document.createElement(tag);props=props||{};for(const k in props){const v=props[k];if(k==="class")e.className=v;else if(k==="html")e.innerHTML=v;else if(k.startsWith("on"))e.addEventListener(k.slice(2),v);else if(v!==false&&v!=null)e.setAttribute(k,v===true?"":v);}kids.flat().forEach(c=>{if(c==null||c===false)return;e.append(c.nodeType?c:document.createTextNode(c));});return e;}
+const NS="http://www.w3.org/2000/svg";
+function sv(tag,attrs,html){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(html!=null)e.innerHTML=html;return e;}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function same(a,b){a=a.slice().sort();b=b.slice().sort();return a.length===b.length&&a.every((x,i)=>x===b[i]);}
+
+/* ==================== STATE ==================== */
+const KEY="ecoArgumentQuest_Mulyanah_v1";
+function fresh(name){return {name:name||"",sound:true,music:true,zones:ZONES.map((z,i)=>({status:i===0?"open":"locked",best:0,bonus:0,tries:0})),boss:{status:"locked",best:0,tries:0},finished:false};}
+let S=fresh();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);if(o&&o.zones&&o.zones.length===ZONES.length){S=o;if(S.music===undefined)S.music=true;return true;}}}catch(e){}return false;}
+function crystals(){return S.zones.filter(z=>z.status==="done").length;}
+function total(){let t=S.zones.reduce((a,z)=>a+z.best+z.bonus,0)+S.boss.best;return Math.min(1000,t);}
+function titleFor(p){return TITLES.find(t=>p>=t[0]);}
+
+/* ==================== SOUND: efek bertema alam + musik latar adaptif ==================== */
+const AC=window.AudioContext||window.webkitAudioContext;
+let ac=null,sfxBus,musBus,noiseBuf,windSrc=null,windGain=null,timer=null,nextT=0,stepN=0,scene=null,armed=false;
+function ensure(){
+  if(!AC)return null;
+  if(!ac){
+    ac=new AC();
+    const comp=ac.createDynamicsCompressor();comp.connect(ac.destination);
+    sfxBus=ac.createGain();sfxBus.gain.value=.9;sfxBus.connect(comp);
+    musBus=ac.createGain();musBus.gain.value=0;musBus.connect(comp);
+    const dl=ac.createDelay(1),fb=ac.createGain(),wet=ac.createGain();dl.delayTime.value=.33;fb.gain.value=.3;wet.gain.value=.25;
+    musBus.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(comp);
+    noiseBuf=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  }
+  if(ac.state==="suspended")ac.resume();
+  return ac;
+}
+function T(){if(!S.sound||!armed||!ensure())return null;return ac.currentTime;}
+function env(g,t,a,d,v){g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+a+d);}
+function osc(type,f,t,a,d,v,bus,f2){const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+a+d);env(g,t,a,d,v);o.connect(g);g.connect(bus);o.start(t);o.stop(t+a+d+.05);}
+function noise(t,d,v,bus,type,freq,q){const s=ac.createBufferSource();s.buffer=noiseBuf;const f=ac.createBiquadFilter();f.type=type;f.frequency.value=freq;f.Q.value=q||1;const g=ac.createGain();env(g,t,.005,d,v);s.connect(f);f.connect(g);g.connect(bus);s.start(t,Math.random());s.stop(t+d+.05);}
+const NOTE=m=>440*Math.pow(2,(m-69)/12);
+function chirp(t,f,bus,v){const n=2+Math.floor(Math.random()*3);for(let i=0;i<n;i++)osc("sine",f*(1+Math.random()*.2),t+i*.09,.01,.07,v,bus,f*(1.3+Math.random()*.4));}
+const sfx={
+  click(){const t=T();if(t===null)return;noise(t,.07,.28,sfxBus,"bandpass",3500,2);osc("triangle",900,t,.005,.05,.06,sfxBus);},   // gemerisik daun
+  pop(){const t=T();if(t===null)return;osc("sine",420,t,.005,.09,.22,sfxBus,880);},                                                  // tetes air
+  ok(st){const t=T();if(t===null)return;const b=60+Math.min(st||0,7)*2;                                                             // gelembung + lonceng angin; nada naik tiap jawaban benar beruntun
+    osc("sine",400,t,.01,.12,.2,sfxBus,1100);[0,4,7].forEach((x,i)=>osc("sine",NOTE(b+x+12),t+.05+i*.07,.01,.4,.16,sfxBus));},
+  no(){const t=T();if(t===null)return;osc("triangle",190,t,.005,.18,.35,sfxBus,110);noise(t,.1,.2,sfxBus,"lowpass",600);osc("triangle",150,t+.14,.005,.2,.3,sfxBus,90);}, // ketukan kayu
+  hit(){const t=T();if(t===null)return;osc("square",140,t,.005,.18,.22,sfxBus,60);noise(t,.18,.3,sfxBus,"lowpass",1200);osc("sawtooth",330,t+.05,.005,.12,.1,sfxBus,200);},
+  unlock(){const t=T();if(t===null)return;chirp(t,2300,sfxBus,.07);chirp(t+.35,2700,sfxBus,.06);[60,64,67,72].forEach((m,i)=>osc("triangle",NOTE(m+12),t+.1+i*.1,.01,.45,.14,sfxBus));}, // burung + arpeggio
+  win(){const t=T();if(t===null)return;[60,64,67,72,76,79].forEach((m,i)=>osc("triangle",NOTE(m+12),t+i*.11,.01,.6,.16,sfxBus));chirp(t+.7,2500,sfxBus,.07);chirp(t+1,3000,sfxBus,.06);}
+};
+const SCENES={
+  calm :{bpm:76 ,ch:[[48,55,60,64],[45,52,57,60],[41,48,53,57],[43,50,55,59]],pent:[72,74,76,79,81,84],wind:.05,bird:.05,drums:"",soft:true},
+  quest:{bpm:92 ,ch:[[48,55,60,64],[45,52,57,60],[41,48,53,57],[43,50,55,59]],pent:[72,74,76,79,81,84],wind:.03,bird:.015,drums:"",soft:false},
+  tense:{bpm:106,ch:[[45,52,57,60],[41,48,53,57],[38,45,50,53],[40,47,52,56]],pent:[69,72,74,76,79,81],wind:.02,bird:0,drums:"heart",soft:false},
+  boss :{bpm:126,ch:[[45,52,57,60],[41,48,53,57],[43,50,55,59],[40,47,52,56]],pent:[69,72,74,76,79,81],wind:0,bird:0,drums:"war",soft:false},
+  joy  :{bpm:100,ch:[[48,55,60,64],[43,50,55,59],[45,52,57,60],[41,48,53,57]],pent:[72,74,76,79,81,84],wind:.03,bird:.06,drums:"",soft:false}
+};
+function pad(f,t,d,type){const o=ac.createOscillator(),g=ac.createGain(),lp=ac.createBiquadFilter();o.type=type;o.frequency.value=f;lp.type="lowpass";lp.frequency.value=900;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.04,t+d*.35);g.gain.linearRampToValueAtTime(.0001,t+d);o.connect(lp);lp.connect(g);g.connect(musBus);o.start(t);o.stop(t+d+.1);}
+function step(n,t){
+  const sc=SCENES[scene],ch=sc.ch[Math.floor(n/8)%4],k=n%8;
+  if(k===0)ch.forEach(m=>pad(NOTE(m),t,60/sc.bpm*4,sc.drums==="war"?"sawtooth":"triangle"));
+  if(sc.soft){if(k%2===0&&Math.random()<.8)osc("triangle",NOTE(ch[(k/2)%ch.length]+12),t,.01,.9,.07,musBus);}
+  else osc("triangle",NOTE(ch[k%ch.length]+12),t,.005,.35,.06,musBus);
+  if(k%4===2&&Math.random()<.5)osc("sine",NOTE(sc.pent[Math.floor(Math.random()*sc.pent.length)]),t,.01,.7,.07,musBus);
+  if(sc.bird&&Math.random()<sc.bird)chirp(t,2400+Math.random()*1200,musBus,.025);
+  if(sc.drums==="war"){if(k%4===0)osc("sine",120,t,.002,.2,.5,musBus,45);if(k===4)noise(t,.15,.22,musBus,"highpass",1500);noise(t,.04,.04,musBus,"highpass",6000);if(k%2===0)osc("sawtooth",NOTE(ch[0]-12),t,.005,.25,.1,musBus);}
+  if(sc.drums==="heart"&&(k===0||k===2))osc("sine",70,t,.005,.25,.35,musBus,40);
+}
+function tick(){if(!ac||!scene)return;const sd=60/SCENES[scene].bpm/2;if(nextT<ac.currentTime)nextT=ac.currentTime+.05;while(nextT<ac.currentTime+.25){step(stepN,nextT);nextT+=sd;stepN++;}}
+function startWind(){if(windSrc||!ac)return;windSrc=ac.createBufferSource();windSrc.buffer=noiseBuf;windSrc.loop=true;const f=ac.createBiquadFilter();f.type="lowpass";f.frequency.value=500;windGain=ac.createGain();windGain.gain.value=0;windSrc.connect(f);f.connect(windGain);windGain.connect(musBus);windSrc.start();const lfo=ac.createOscillator(),lg=ac.createGain();lfo.frequency.value=.12;lg.gain.value=250;lfo.connect(lg);lg.connect(f.frequency);lfo.start();}
+function startMusic(){if(!armed||!S.music||!scene||!ensure())return;startWind();const n=ac.currentTime;musBus.gain.cancelScheduledValues(n);musBus.gain.setValueAtTime(musBus.gain.value,n);musBus.gain.linearRampToValueAtTime(.55,n+1.2);windGain.gain.linearRampToValueAtTime(SCENES[scene].wind||0,n+1);if(!timer)timer=setInterval(tick,60);}
+function stopMusic(){if(!ac)return;const n=ac.currentTime;musBus.gain.cancelScheduledValues(n);musBus.gain.setValueAtTime(musBus.gain.value,n);musBus.gain.linearRampToValueAtTime(0,n+.4);clearInterval(timer);timer=null;}
+function setScene(name){scene=name;startMusic();}
+function mood(){if(R&&$("#s-quiz").classList.contains("on")&&scene!=="boss")setScene(R.hearts<=1?"tense":"quest");}   // musik menegang saat nyawa tinggal satu
+function syncAudioBtns(){$("#btnMusic").classList.toggle("off",!S.music);$("#btnSfx").classList.toggle("off",!S.sound);$("#btnSfx").textContent=S.sound?"🔊":"🔇";}
+function arm(){if(armed)return;armed=true;startMusic();}
+["pointerdown","keydown","touchstart"].forEach(ev=>document.addEventListener(ev,arm,{passive:true}));
+document.addEventListener("visibilitychange",()=>{if(!ac)return;if(document.hidden)ac.suspend();else if(armed)ac.resume();});
+
+/* ==================== SCREENS / MODAL ==================== */
+const SCENE_OF={"s-title":"calm","s-map":"calm","s-quiz":"quest","s-final":"joy"};
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id===id));window.scrollTo(0,0);if(SCENE_OF[id])setScene(SCENE_OF[id]);}
+function modal(content){const m=$("#modal"),s=$("#sheet");s.innerHTML="";[].concat(content).forEach(c=>s.append(c));m.classList.add("on");}
+function closeModal(){$("#modal").classList.remove("on");}
+$("#modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
+
+function rulesModal(){
+  modal([h("h2",null,"📜 Aturan Main"),
+   h("ul",{html:
+   "<li>Mulai dari <b>Zona 1</b>. Zona terbuka <b>berurutan</b>.</li>"+
+   "<li><b>Syarat lulus zona:</b> skor minimal <b>70%</b>. Lulus memberi 1 💎 Kristal Argumen dan sebuah lencana.</li>"+
+   "<li>Tiap zona memberi <b>3 nyawa ❤️</b>. Jawaban salah mengurangi 1 nyawa dan langsung ada umpan balik.</li>"+
+   "<li>Jika nyawa habis atau skor &lt; 70%, buka <b>Gulungan Kebijaksanaan</b> (ringkasan materi) lalu ulangi zona. Poin ulangan maksimal <b>80%</b>.</li>"+
+   "<li>Bonus <b>+10 poin</b> untuk zona yang selesai tanpa kehilangan nyawa.</li>"+
+   "<li><b>Zona 7 (Istana Dewan Pulau)</b> terbuka setelah 6 Kristal terkumpul. Kalahkan <i>Raja Argumen Lemah</i> dengan minimal 180 dari 300 poin. Boleh diulang satu kali dengan kartu petunjuk.</li>"+
+   "<li>Gelar akhir: 850+ <b>Eco Champion</b>, 700-849 <b>Eco Guardian</b>, 550-699 <b>Eco Explorer</b>, di bawah 550 <b>Eco Cadet</b>.</li>"}),
+   h("div",{class:"row"},h("button",{class:"btn",onclick:closeModal},"Mengerti"))]);
+}
+function devModal(){
+  let photo=DEV_PHOTO||"";try{photo=photo||localStorage.getItem(KEY+"_photo")||"";}catch(e){}
+  const box=h("div",{class:"devphoto"});
+  if(photo)box.append(h("img",{src:photo,alt:"Foto pengembang"}));else box.textContent="M";
+  const file=h("input",{type:"file",accept:"image/*",style:"display:none"});
+  file.addEventListener("change",()=>{const f=file.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{const c=document.createElement("canvas");const m=300;const sc=Math.min(1,m/Math.max(img.width,img.height));c.width=img.width*sc;c.height=img.height*sc;c.getContext("2d").drawImage(img,0,0,c.width,c.height);const d=c.toDataURL("image/jpeg",.85);try{localStorage.setItem(KEY+"_photo",d);}catch(e){}box.innerHTML="";box.append(h("img",{src:d,alt:"Foto pengembang"}));};img.src=r.result;};r.readAsDataURL(f);});
+  modal([h("h2",{style:"text-align:center"},"Developer Profile"),box,
+   h("div",{style:"text-align:center;margin-top:10px"},h("h3",null,"Mulyanah, S. Pd."),h("div",{class:"chip"},"English Teacher"),h("div",{class:"chip"},"S1 English Education"),h("div",{class:"chip"},"SMAN 1 Parongpong")),
+   h("p",{style:"text-align:center;line-height:1.5"},"Eco Argument Quest dirancang untuk pembelajaran Bahasa Inggris Fase F / Kelas 11 pada materi Analytical Exposition dengan tema Love Your Environment."),
+   h("div",{class:"row"},h("button",{class:"btn ghost sm",onclick:()=>file.click()},"📷 Pasang foto"),file,h("button",{class:"btn",onclick:closeModal},"Tutup"))]);
+}
+
+/* ==================== MAP ==================== */
+const PTS=[[125,520],[250,420],[130,290],[330,200],[510,300],[680,190],[860,330]];
+function curve(p){let d=`M${p[0][0]},${p[0][1]}`;for(let i=0;i<p.length-1;i++){const p0=p[i-1]||p[i],p1=p[i],p2=p[i+1],p3=p[i+2]||p2;const c1=[p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6],c2=[p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6];d+=` C${c1[0]},${c1[1]} ${c2[0]},${c2[1]} ${p2[0]},${p2[1]}`;}return d;}
+let seed=7;function rnd(){seed=(seed*16807)%2147483647;return seed/2147483647;}
+function renderMap(){
+  const svg=$("#mapSvg");svg.innerHTML="";
+  const defs=sv("defs",{},`<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9edcf2"/><stop offset="1" stop-color="#eaf8f0"/></linearGradient>
+   <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd66f"/><stop offset="1" stop-color="#4fae5f"/></linearGradient>`);
+  svg.append(defs,sv("rect",{width:1000,height:640,fill:"url(#sky)"}));
+  svg.append(sv("circle",{cx:900,cy:80,r:44,fill:"#ffd95a"}),sv("circle",{cx:900,cy:80,r:62,fill:"#ffd95a","opacity":".25"}));
+  [[60,70,1],[400,110,.8],[650,60,1.1]].forEach(c=>svg.append(sv("g",{class:"cloud",style:`animation-delay:${-c[0]/8}s`,transform:`translate(${c[0]},${c[1]}) scale(${c[2]})`},`<ellipse cx="0" cy="0" rx="46" ry="18" fill="#fff" opacity=".9"/><ellipse cx="28" cy="-10" rx="30" ry="16" fill="#fff" opacity=".9"/><ellipse cx="-26" cy="-8" rx="26" ry="14" fill="#fff" opacity=".9"/>`)));
+  svg.append(sv("path",{d:"M0,230 C150,150 260,190 380,160 C520,120 640,190 760,150 C860,120 940,160 1000,140 L1000,640 L0,640Z",fill:"#b8e6a0"}));
+  svg.append(sv("path",{d:"M0,300 C160,240 300,300 460,250 C620,200 760,290 1000,230 L1000,640 L0,640Z",fill:"url(#grass)"}));
+  // river
+  svg.append(sv("path",{d:"M600,640 C640,560 560,520 600,470 C650,410 740,430 800,380 C860,330 960,360 1010,300",fill:"none",stroke:"#6cc3e0","stroke-width":46,"stroke-linecap":"round",opacity:".85"}));
+  svg.append(sv("path",{d:"M600,640 C640,560 560,520 600,470 C650,410 740,430 800,380 C860,330 960,360 1010,300",fill:"none",stroke:"#bfeaf7","stroke-width":8,"stroke-dasharray":"2 22","stroke-linecap":"round"}));
+  // trees
+  const trees=[];let tries=0;while(trees.length<34&&tries<400){tries++;const x=20+rnd()*960,y=270+rnd()*350;if(PTS.some(p=>Math.hypot(p[0]-x,(p[1]-y)*1.2)<95))continue;if(x>560&&x<840&&y>380&&y<640&&Math.abs((x-700))<90&&y>460)continue;trees.push([x,y]);}
+  trees.sort((a,b)=>a[1]-b[1]).forEach(([x,y])=>{const s=.7+rnd()*.6;svg.append(sv("g",{transform:`translate(${x},${y}) scale(${s})`},`<rect x="-3" y="0" width="6" height="16" fill="#8a5a33"/><circle cx="0" cy="-6" r="16" fill="#2f9e6b"/><circle cx="-9" cy="2" r="11" fill="#3fb67b"/><circle cx="9" cy="2" r="11" fill="#2b8f60"/>`));});
+  // wind turbines
+  [[40,200],[960,230]].forEach(([x,y])=>svg.append(sv("g",{transform:`translate(${x},${y})`},`<rect x="-2" y="0" width="4" height="60" fill="#fff"/><g><animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="6s" repeatCount="indefinite"/><rect x="-2" y="-34" width="4" height="34" fill="#fff"/><rect x="-2" y="-34" width="4" height="34" fill="#fff" transform="rotate(120)"/><rect x="-2" y="-34" width="4" height="34" fill="#fff" transform="rotate(240)"/></g>`)));
+  // path
+  const d=curve(PTS);
+  svg.append(sv("path",{d,fill:"none",stroke:"#a77a4b","stroke-width":26,"stroke-linecap":"round",opacity:".9"}));
+  svg.append(sv("path",{d,fill:"none",stroke:"#e9cf9f","stroke-width":18,"stroke-linecap":"round"}));
+  svg.append(sv("path",{d,fill:"none",stroke:"#fff7dc","stroke-width":3,"stroke-dasharray":"2 14","stroke-linecap":"round"}));
+  // nodes
+  const cur=S.zones.findIndex(z=>z.status==="open");
+  const nodes=ZONES.concat([BOSS]);
+  nodes.forEach((z,i)=>{
+    const [x,y]=PTS[i];
+    const isBoss=i===6;
+    const st=isBoss?S.boss.status:S.zones[i].status;
+    const g=sv("g",{class:"node "+st,tabindex:st==="locked"?"-1":"0",role:"button","aria-label":`Zona ${i+1}: ${z.name} (${st==="locked"?"terkunci":st==="done"?"selesai":"terbuka"})`});
+    const r=isBoss?34:28;
+    if(st==="open")g.append(sv("circle",{cx:x,cy:y,r:r+4,fill:"#ffd95a",class:"pulse"}));
+    g.append(sv("circle",{cx:x,cy:y,r,fill:st==="done"?"#2f9e6b":st==="open"?"#ffc93c":"#9db3a8",stroke:"#fff","stroke-width":5}));
+    g.append(sv("text",{x,y:y+8,"text-anchor":"middle","font-size":st==="locked"?22:24,"font-weight":800,fill:st==="open"?"#16352b":"#fff"},st==="locked"?"🔒":st==="done"?"✓":String(i+1)));
+    g.append(sv("text",{x,y:y-r-8,"text-anchor":"middle","font-size":isBoss?50:36,opacity:st==="locked"?.55:1},z.icon));
+    const label=`${i+1}. ${z.name}`;const w=label.length*10.2+20;
+    g.append(sv("rect",{x:x-w/2,y:y+r+8,width:w,height:30,rx:15,fill:"#fffdf6",stroke:st==="locked"?"#cfe5d8":"#2f9e6b","stroke-width":2}));
+    g.append(sv("text",{x,y:y+r+29,"text-anchor":"middle","font-size":16,"font-weight":700,fill:"#16352b"},label));
+    if(st==="done"&&!isBoss){const hs=S.zones[i];g.append(sv("text",{x,y:y+r+56,"text-anchor":"middle","font-size":16,fill:"#16352b","font-weight":700},"⭐ "+(hs.best+hs.bonus)));}
+    if(st==="done"&&isBoss)g.append(sv("text",{x,y:y+r+56,"text-anchor":"middle","font-size":16,fill:"#16352b","font-weight":700},"👑 "+S.boss.best));
+    const go=()=>{if(st==="locked"){sfx.no();toast(isBoss?"Kumpulkan 6 Kristal Argumen dahulu.":"Selesaikan zona sebelumnya dahulu.");return;}sfx.click();openIntro(i);};
+    g.addEventListener("click",go);g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}});
+    svg.append(g);
+  });
+  // avatar
+  const ai=S.boss.status==="open"?6:(cur>=0?cur:6);const [ax,ay]=PTS[ai];
+  svg.append(sv("g",{transform:`translate(${ax+30},${ay-34})`},`<g class="avatar"><circle r="19" fill="#fff" stroke="#2f9e6b" stroke-width="3"/><text y="9" text-anchor="middle" font-size="24">🧒</text></g>`));
+  // HUD
+  $("#hName").textContent="🌱 "+(S.name||"Eco Debater");
+  $("#hPts").textContent=total();$("#hCry").textContent=crystals();
+  syncAudioBtns();
+}
+function toast(msg){modal([h("p",{style:"font-size:1.1rem;text-align:center"},"🔒 "+msg),h("div",{class:"row"},h("button",{class:"btn",onclick:closeModal},"OK"))]);}
+
+/* ==================== INTRO ==================== */
+function openIntro(i){
+  if(i===6){
+    modal([h("div",{class:"big"},"🏛️"),h("h2",{style:"text-align:center"},"Zona 7: "+BOSS.name),
+      h("p",null,h("span",{class:"chip"},"Boss Battle HOTS"),h("span",{class:"chip"},"300 poin")),
+      h("p",{html:"<b>Misi Utama:</b> Menganalisis, mengevaluasi, dan memperbaiki teks eksposisi tentang isu lingkungan."}),
+      h("ul",{html:"<li>Lawanmu: <b>Raja Argumen Lemah</b> (100 HP).</li><li>Ada 4 tugas. Tulis jawabanmu dalam bahasa Inggris, lalu bandingkan dengan kunci dan nilai dirimu memakai rubrik.</li><li>Kalahkan bos dengan minimal <b>180 dari 300 poin</b>.</li><li>Imbalan: Lencana <b>Pembela Pulau Hijau</b> + Mahkota Eco Debater 👑</li>"}),
+      h("div",{class:"row"},h("button",{class:"btn sun",onclick:()=>{closeModal();startBoss();}},"⚔️ Mulai Sidang"),h("button",{class:"btn ghost",onclick:closeModal},"Nanti"))]);
+    return;
+  }
+  const z=ZONES[i],zs=S.zones[i];
+  modal([h("div",{class:"big"},z.icon),h("h2",{style:"text-align:center"},`Zona ${i+1}: ${z.name}`),
+    h("p",null,h("span",{class:"chip"},z.type),h("span",{class:"chip"},z.points+" poin"),h("span",{class:"chip"},"Lulus ≥ 70%")),
+    h("p",null,h("b",null,"Misi Utama: "),z.quest),
+    h("ul",{html:z.intro.map(x=>"<li>"+x+"</li>").join("")}),
+    h("p",null,h("b",null,"Imbalan: "),`Lencana ${z.badgeIcon} ${z.badge}, ${z.points} poin, 1 💎 Kristal Argumen`),
+    zs.status==="done"?h("p",{class:"note"},"Zona ini sudah selesai. Mengulang hanya memperbaiki skor terbaik."):null,
+    h("div",{class:"row"},h("button",{class:"btn sun",onclick:()=>{closeModal();startZone(i);}},"▶ Mulai Zona"),h("button",{class:"btn ghost",onclick:closeModal},"Tutup"))]);
+}
+
+/* ==================== QUIZ ENGINE ==================== */
+let R=null;
+function unitsOf(q){return q.t==="drag"||q.t==="match"||q.t==="order"?q.a.length:1;}
+const TYPE_LABEL={mc:"Pilihan Ganda",mcx:"Pilihan Ganda Kompleks",tf:"Benar / Salah",drag:"Drag and Drop",match:"Menjodohkan",order:"Mengurutkan"};
+function hearts(n){return "❤️".repeat(Math.max(0,n))+"🖤".repeat(Math.max(0,3-n));}
+function startZone(zi){
+  const z=ZONES[zi];
+  R={zi,qi:0,hearts:3,streak:0,units:0,total:z.questions.reduce((a,q)=>a+unitsOf(q),0)};
+  show("s-quiz");$("#qBarWrap").className="bar";
+  renderQ();
+}
+function renderHead(){
+  const z=ZONES[R.zi];
+  $("#qZone").textContent=`Zona ${R.zi+1}: ${z.name}`;
+  $("#qHearts").textContent=hearts(R.hearts);mood();
+  $("#qBar").style.width=Math.round(R.qi/z.questions.length*100)+"%";
+}
+function renderQ(){
+  const z=ZONES[R.zi],q=z.questions[R.qi],body=$("#qBody");
+  body.innerHTML="";renderHead();
+  $("#qType").textContent=`Soal ${R.qi+1}/${z.questions.length} · ${TYPE_LABEL[q.t]}`;
+  const ctx={
+    lose(){R.hearts--;$("#qHearts").textContent=hearts(R.hearts);mood();return R.hearts;},
+    done(units,ok){R.units+=units;feedback(q,ok);}
+  };
+  RENDER[q.t](q,body,ctx);
+}
+function feedback(q,ok){
+  const body=$("#qBody");
+  body.append(h("div",{class:"fb "+(ok?"ok":"no")},h("b",null,ok?"✅ Tepat! ":"❌ Belum tepat. "),q.fb||""));
+  if(ok){R.streak++;sfx.ok(R.streak);}else{R.streak=0;sfx.no();}
+  const last=R.qi>=ZONES[R.zi].questions.length-1;
+  const out=R.hearts<=0;
+  body.append(h("div",{class:"row",style:"margin-top:14px"},h("button",{class:"btn",onclick:()=>{sfx.click();if(out||last)finishZone();else{R.qi++;renderQ();}}},out||last?"Lihat hasil zona ▶":"Soal berikutnya ▶")));
+  $("#qHearts").textContent=hearts(R.hearts);
+}
+function lockAll(box){box.querySelectorAll("button,select,input").forEach(e=>e.disabled=true);}
+
+const RENDER={
+  mc(q,body,ctx){
+    body.append(h("div",{class:"qtext"},q.q));
+    const box=h("div");const btns=[];
+    q.o.forEach((t,i)=>{const b=h("button",{class:"opt",onclick:()=>{
+      lockAll(box);const ok=i===q.a;btns[q.a].classList.add("good");
+      if(!ok){b.classList.add("bad");ctx.lose();}
+      ctx.done(ok?1:0,ok);}},h("span",{class:"k"},"ABCDEFG"[i]),h("span",null,t));btns.push(b);box.append(b);});
+    body.append(box);
+  },
+  mcx(q,body,ctx){
+    body.append(h("div",{class:"qtext"},q.q),h("div",{class:"note"},"Centang semua jawaban yang benar."));
+    const box=h("div");const sel=new Set();const btns=[];
+    q.o.forEach((t,i)=>{const b=h("button",{class:"opt",onclick:()=>{sfx.click();if(sel.has(i)){sel.delete(i);b.classList.remove("sel");b.firstChild.textContent="ABCDEFG"[i];}else{sel.add(i);b.classList.add("sel");b.firstChild.textContent="✓";}}},h("span",{class:"k"},"ABCDEFG"[i]),h("span",null,t));btns.push(b);box.append(b);});
+    const chk=h("button",{class:"btn",style:"margin-top:8px",onclick:()=>{
+      if(!sel.size){toast("Pilih minimal satu jawaban.");return;}
+      lockAll(box);chk.disabled=true;
+      const ok=same([...sel],q.a);
+      btns.forEach((b,i)=>{b.firstChild.textContent="ABCDEFG"[i];if(q.a.includes(i))b.classList.add("good");else if(sel.has(i))b.classList.add("bad");});
+      if(!ok)ctx.lose();ctx.done(ok?1:0,ok);}},"Periksa");
+    body.append(box,chk);
+  },
+  tf(q,body,ctx){
+    body.append(h("div",{class:"qtext"},"“"+q.q+"”"));
+    const box=h("div",{class:"tf"});const bs=[];
+    [[true,"✔ Benar"],[false,"✘ Salah"]].forEach(([v,l])=>{const b=h("button",{class:"opt",onclick:()=>{
+      lockAll(box);const ok=v===q.a;bs.forEach(x=>{if(x.v===q.a)x.b.classList.add("good");});if(!ok){b.classList.add("bad");ctx.lose();}ctx.done(ok?1:0,ok);}},l);bs.push({v,b});box.append(b);});
+    body.append(box);
+  },
+  drag(q,body,ctx){
+    body.append(h("div",{class:"qtext"},q.q),h("div",{class:"note"},"Seret kata ke celah, atau ketuk kata lalu ketuk celah. Ketuk celah terisi untuk mengembalikan kata."));
+    const placed=q.a.map(()=>null),locked=q.a.map(()=>false);let sel=null;
+    const pass=h("div",{class:"passage"}),bank=h("div",{class:"bank"});
+    const blanks=[];
+    q.text.split(/(\{\d+\})/).forEach(part=>{const m=part.match(/^\{(\d+)\}$/);if(!m){pass.append(part);return;}
+      const i=+m[1];const bl=h("span",{class:"blank",tabindex:"0"},"");
+      bl.addEventListener("dragover",e=>{e.preventDefault();bl.classList.add("over");});
+      bl.addEventListener("dragleave",()=>bl.classList.remove("over"));
+      bl.addEventListener("drop",e=>{e.preventDefault();bl.classList.remove("over");const w=+e.dataTransfer.getData("text/plain");put(i,w);});
+      bl.addEventListener("click",()=>{if(locked[i])return;if(sel!==null){put(i,sel);}else if(placed[i]!==null){placed[i]=null;sfx.click();draw();}});
+      blanks[i]=bl;pass.append(bl);});
+    function put(i,w){if(locked[i])return;const prev=placed[i];placed.forEach((p,k)=>{if(p===w)placed[k]=null;});placed[i]=w;sel=null;sfx.click();draw();}
+    function draw(){
+      bank.innerHTML="";
+      q.bank.forEach((w,wi)=>{if(placed.includes(wi))return;const b=h("button",{class:"word"+(sel===wi?" sel":""),draggable:"true"},w);
+        b.addEventListener("dragstart",e=>{e.dataTransfer.setData("text/plain",String(wi));});
+        b.addEventListener("click",()=>{sel=sel===wi?null:wi;draw();});bank.append(b);});
+      blanks.forEach((bl,i)=>{bl.textContent=placed[i]===null?"      ":q.bank[placed[i]];});
+    }
+    const chk=h("button",{class:"btn",onclick:()=>{
+      if(placed.some((p,i)=>p===null&&!locked[i])){toast("Isi semua celah dahulu.");return;}
+      let wrong=0;
+      placed.forEach((p,i)=>{if(locked[i])return;if(q.bank[p]===q.a[i]){locked[i]=true;blanks[i].classList.remove("bad");blanks[i].classList.add("good");}else{wrong++;blanks[i].classList.add("bad");const k=i;setTimeout(()=>{blanks[k].classList.remove("bad");},700);placed[i]=null;}});
+      const units=locked.filter(Boolean).length;
+      if(!wrong){chk.disabled=true;ctx.done(units,true);draw();return;}
+      sfx.no();const left=ctx.lose();draw();
+      if(left<=0){chk.disabled=true;ctx.done(units,false);}
+      else toast("Ada yang belum tepat. Perbaiki kata yang kembali ke kotak.");
+    }},"Periksa");
+    body.append(pass,bank,chk);draw();
+  },
+  match(q,body,ctx){
+    body.append(h("div",{class:"qtext"},q.q),h("div",{class:"note"},"Pilih pasangan yang tepat untuk setiap kalimat."));
+    const rows=[],sels=[];const locked=q.a.map(()=>false);
+    q.left.forEach((t,i)=>{
+      const s=h("select",null,h("option",{value:""},"— pilih —"),q.right.map((r,ri)=>h("option",{value:ri},"ABCDEFG"[ri]+". "+r)));
+      const row=h("div",{class:"mrow"},h("div",null,`${i+1}. ${t}`),s);rows.push(row);sels.push(s);body.append(row);});
+    const chk=h("button",{class:"btn",style:"margin-top:8px",onclick:()=>{
+      if(sels.some((s,i)=>!locked[i]&&s.value==="")){toast("Pilih pasangan untuk semua kalimat.");return;}
+      let wrong=0;
+      sels.forEach((s,i)=>{if(locked[i])return;if(+s.value===q.a[i]){locked[i]=true;s.disabled=true;rows[i].classList.remove("bad");rows[i].classList.add("good");}else{wrong++;rows[i].classList.add("bad");s.value="";const k=i;setTimeout(()=>rows[k].classList.remove("bad"),900);}});
+      const units=locked.filter(Boolean).length;
+      if(!wrong){chk.disabled=true;ctx.done(units,true);return;}
+      const left=ctx.lose();
+      if(left<=0){chk.disabled=true;sels.forEach(s=>s.disabled=true);ctx.done(units,false);}
+      else toast("Beberapa pasangan belum tepat. Coba lagi.");
+    }},"Periksa");
+    body.append(chk);
+  },
+  order(q,body,ctx){
+    body.append(h("div",{class:"qtext"},q.q),h("div",{class:"note"},"Gunakan tombol ▲ ▼ untuk memindahkan kalimat."));
+    let items=q.items.slice();const list=h("div");
+    function draw(marks){list.innerHTML="";items.forEach((it,i)=>{
+      const row=h("div",{class:"orow"+(marks?(marks[i]?" good":" bad"):"")},h("div",{class:"n"},String(i+1)),h("div",{class:"t"},it.t),
+       h("div",{class:"mv"},h("button",{"aria-label":"Naik",onclick:()=>mv(i,-1)},"▲"),h("button",{"aria-label":"Turun",onclick:()=>mv(i,1)},"▼")));list.append(row);});}
+    function mv(i,d){const j=i+d;if(j<0||j>=items.length)return;[items[i],items[j]]=[items[j],items[i]];sfx.click();draw();}
+    const chk=h("button",{class:"btn",style:"margin-top:8px",onclick:()=>{
+      const marks=items.map((it,i)=>it.k===q.a[i]);const units=marks.filter(Boolean).length;draw(marks);
+      if(units===q.a.length){chk.disabled=true;list.querySelectorAll("button").forEach(b=>b.disabled=true);ctx.done(units,true);return;}
+      const left=ctx.lose();
+      if(left<=0){chk.disabled=true;list.querySelectorAll("button").forEach(b=>b.disabled=true);ctx.done(units,false);}
+      else toast("Urutan belum tepat. Kalimat hijau sudah di posisi yang benar.");
+    }},"Periksa urutan");
+    body.append(list,chk);draw();
+  }
+};
+
+/* ==================== ZONE RESULT ==================== */
+function finishZone(){
+  const z=ZONES[R.zi],zs=S.zones[R.zi];
+  const pct=R.units/R.total;const pass=R.hearts>0&&pct>=.7;
+  const mult=zs.tries>0?.8:1;
+  const pts=Math.round(z.points*pct*mult);
+  const bonus=(pass&&R.hearts===3)?10:0;
+  zs.tries++;
+  if(pass){
+    const first=zs.status!=="done";
+    zs.best=Math.max(zs.best,pts);zs.bonus=Math.max(zs.bonus,bonus);zs.status="done";
+    if(first){if(R.zi<5&&S.zones[R.zi+1].status==="locked")S.zones[R.zi+1].status="open";if(R.zi===5&&S.boss.status==="locked")S.boss.status="open";}
+    save();sfx.unlock();
+    modal([h("div",{class:"big"},z.badgeIcon),h("h2",{style:"text-align:center"},"Zona selesai!"),
+      h("p",{style:"text-align:center"},h("span",{class:"chip"},"Lencana: "+z.badge),h("span",{class:"chip"},"💎 +1 Kristal")),
+      h("p",{style:"text-align:center;font-size:1.1rem"},`Skor ${Math.round(pct*100)}% · +${pts} poin${bonus?` · bonus +${bonus}`:""} · ${"⭐".repeat(R.hearts)}`),
+      R.zi===5?h("p",{style:"text-align:center"},"Semua Kristal terkumpul! 🏛️ Istana Dewan Pulau kini terbuka."):null,
+      h("div",{class:"row"},h("button",{class:"btn sun",onclick:()=>{closeModal();backToMap();}},"🗺️ Kembali ke peta"))]);
+  }else{
+    save();sfx.no();
+    modal([h("div",{class:"big"},"📜"),h("h2",{style:"text-align:center"},"Gulungan Kebijaksanaan"),
+      h("p",{style:"text-align:center"},`Skor ${Math.round(pct*100)}%${R.hearts<=0?" dan nyawa habis":""}. Syarat lulus: 70% dengan nyawa tersisa. Baca ringkasan ini, lalu ulangi zona (poin ulangan maksimal 80%).`),
+      h("ul",{html:z.scroll.map(x=>"<li>"+x+"</li>").join("")}),
+      h("div",{class:"row"},h("button",{class:"btn sun",onclick:()=>{closeModal();startZone(R.zi);}},"↻ Ulangi zona"),h("button",{class:"btn ghost",onclick:()=>{closeModal();backToMap();}},"Ke peta"))]);
+  }
+}
+function backToMap(){show("s-map");renderMap();const sl=$("#promptSlot");if(sl&&!sl.firstChild)sl.append(promptCard());}
+
+/* ==================== BOSS ==================== */
+let B=null;
+function startBoss(){
+  B={ti:0,pts:0,hp:100};
+  show("s-quiz");setScene("boss");$("#qBarWrap").className="bar boss";renderBoss();
+}
+function renderBoss(){
+  const body=$("#qBody");body.innerHTML="";
+  const t=BOSS.tasks[B.ti];
+  $("#qZone").textContent="Zona 7: "+BOSS.name;$("#qType").textContent=`Tugas ${B.ti+1}/${BOSS.tasks.length} · ${t.lv} · ${t.w} poin`;
+  $("#qHearts").textContent="Poin: "+B.pts+" / 300";
+  $("#qBar").style.width=Math.max(0,B.hp)+"%";
+  body.append(h("div",{class:"boss-head"},h("div",{class:"face"},"👹"),h("div",null,h("b",null,"Raja Argumen Lemah"),h("div",{class:"note"},"HP "+Math.max(0,Math.round(B.hp))+"/100 (batang di atas). Butuh ≥180 poin untuk mengalahkannya."))));
+  body.append(h("div",{class:"passage"},h("b",null,"Why Our School Needs a Green Canteen"),BOSS.text.map(s=>h("div",null,s))));
+  body.append(h("div",{class:"qtext"},h("b",null,"Task "+(B.ti+1)+": "),t.q));
+  const ta=h("textarea",{placeholder:"Write your answer in English..."});
+  const area=h("div");
+  const reveal=h("button",{class:"btn",onclick:()=>{
+    if(ta.value.trim().length<10){toast("Tulis jawabanmu dahulu (minimal beberapa kata).");return;}
+    ta.disabled=true;reveal.disabled=true;sfx.click();
+    area.append(h("div",{class:"key"},h("b",null,"Kunci dan indikator:"),h("div",{style:"margin-top:6px"},t.key)));
+    area.append(h("table",{class:"rubric"},h("tr",null,h("th",null,"Level"),h("th",null,"Deskriptor"),h("th",null,"Poin")),BOSS.rubric.map(r=>h("tr",null,r.map(c=>h("td",null,c))))));
+    area.append(h("div",{class:"note"},"Nilai jawabanmu secara jujur (atau minta guru menilai):"));
+    const lv=h("div",{class:"lvl"});
+    [4,3,2,1].forEach(L=>lv.append(h("button",{class:"btn "+(L>=3?"":"ghost"),onclick:()=>score(L)},`Level ${L} (${L*25}%)`)));
+    area.append(lv);
+  }},"Periksa dengan kunci");
+  body.append(ta,h("div",{class:"row",style:"margin:10px 0"},reveal),area);
+}
+function score(L){
+  const t=BOSS.tasks[B.ti];const gain=Math.round(t.w*L/4);
+  B.pts+=gain;B.hp=100-B.pts/3;
+  if(L>=3)sfx.hit();else sfx.no();
+  B.ti++;
+  if(B.ti>=BOSS.tasks.length)finishBoss();else renderBoss();
+}
+function finishBoss(){
+  const win=B.pts>=180;S.boss.tries++;
+  S.boss.best=Math.max(S.boss.best,B.pts);
+  if(win){S.boss.status="done";S.finished=true;}
+  else if(S.boss.tries>=2){S.finished=true;}
+  save();
+  $("#qBar").style.width=Math.max(0,100-B.pts/3)+"%";
+  if(win){
+    setScene("joy");sfx.win();
+    modal([h("div",{class:"big"},"👑"),h("h2",{style:"text-align:center"},"Raja Argumen Lemah dikalahkan!"),
+      h("p",{style:"text-align:center;font-size:1.1rem"},`Skor Boss Battle: ${B.pts} / 300. Dewan Pulau menyetujui rencana penyelamatan Pulau Hijau.`),
+      h("div",{class:"row"},h("button",{class:"btn sun",onclick:()=>{closeModal();showFinal();}},"🏆 Lihat sertifikat"))]);
+  }else if(S.boss.tries<2){
+    sfx.no();
+    modal([h("div",{class:"big"},"🛡️"),h("h2",{style:"text-align:center"},"Bos masih berdiri"),
+      h("p",{style:"text-align:center"},`Skor ${B.pts} / 300. Butuh minimal 180. Kamu mendapat satu kesempatan ulang dengan kartu petunjuk:`),
+      h("ul",{html:BOSS.tasks.map((t,i)=>`<li><b>Task ${i+1}:</b> ${t.hint}</li>`).join("")}),
+      h("div",{class:"row"},h("button",{class:"btn sun",onclick:()=>{closeModal();startBoss();}},"↻ Coba lagi"),h("button",{class:"btn ghost",onclick:()=>{closeModal();backToMap();}},"Ke peta"))]);
+  }else{
+    modal([h("div",{class:"big"},"🌱"),h("h2",{style:"text-align:center"},"Sidang selesai"),
+      h("p",{style:"text-align:center"},`Skor terbaik Boss Battle: ${S.boss.best} / 300. Bicarakan hasilnya dengan gurumu untuk remedial, lalu coba lagi kapan saja dari peta.`),
+      h("div",{class:"row"},h("button",{class:"btn sun",onclick:()=>{closeModal();showFinal();}},"Lihat hasil akhir"))]);
+  }
+}
+
+/* ==================== FINAL ==================== */
+function showFinal(){
+  const p=total(),t=titleFor(p);
+  $("#fName").textContent=S.name||"Eco Debater";
+  $("#fTitle").textContent=t[1];$("#fTitleIcon").textContent=t[2];$("#fPts").textContent=p;
+  const bd=$("#fBadges");bd.innerHTML="";
+  ZONES.forEach((z,i)=>bd.append(h("div",{class:"badge"+(S.zones[i].status==="done"?"":" off")},z.badgeIcon+" "+z.badge)));
+  bd.append(h("div",{class:"badge"+(S.boss.status==="done"?"":" off")},"👑 "+BOSS.badge));
+  $("#fMsg").textContent=S.boss.status==="done"?"Mahkota Eco Debater diraih. Terima kasih telah mencintai lingkungan!":"Boss Battle belum dituntaskan. Teruslah berlatih menyusun argumen!";
+  show("s-final");
+}
+
+
+/* ==================== BANK PROMPT ==================== */
+const PROMPT_GIM = `Anda adalah seorang ahli perancang gim edukasi (educational game designer) dan pengembang kurikulum interaktif untuk jenjang SMA.
+
+Tugas Utama: Buatkan rancangan gim edukasi berbasis peta/papan permainan (game map) yang terdiri dari beberapa zona/wilayah tantangan, misi interaktif, serta variasi soal/kuis yang kaya dan menantang untuk siswa SMA.
+
+Informasi Pembelajaran:
+Mata Pelajaran: [Isi Mata Pelajaran]
+Topik / Materi Utama: [Isi Topik / Sub-Materi]
+Kelas / Tingkat: [Isi Kelas, misal: Kelas 10 / 11 / 12]
+Target Durasi Permainan: [Isi Durasi, misal: 45 Menit / 1 Pertemuan]
+
+Struktur Output yang Diharapkan:
+
+Peta & Tema Gim (Game Map & Narrative)
+Berikan nama gim yang menarik dan narasi/latar belakang cerita pendek yang relevan.
+Buatlah peta dengan 3-4 Zona/Level berurutan yang menggambarkan alur penguasaan materi. Berikan nama tematik untuk setiap zona.
+
+Misi & Tantangan per Zona
+Untuk setiap zona, sediakan:
+Misi Utama (Main Quest): Tujuan pembelajaran zona tersebut.
+Imbalan (Rewards/Badges): Poin atau lencana yang didapat siswa.
+
+Bank Soal & Kuis Variatif (Sebarkan ke Seluruh Zona)
+Sediakan contoh soal/tantangan yang mencakup jenis-jenis berikut secara berurutan:
+1. Pilihan Ganda (PG)
+2. Pilihan Ganda Kompleks (PGK)
+3. Benar / Salah (True/False)
+4. Drag and Drop
+5. Menjodohkan / Mengurutkan (Matching / Ordering)
+
+Boss Battle (HOTS): Soal analisis tingkat tinggi di zona terakhir sebagai Ujian Akhir Peta.
+
+Mekanik Permainan & Panduan Guru
+Aturan pergerakan pemain (syarat kelulusan zona).`;
+
+function copyText(t,btn){
+  const label="📋 Salin prompt";
+  const ok=()=>{btn.textContent="✓ Tersalin";sfx.ok(2);setTimeout(()=>{btn.textContent=label;},1800);};
+  const old=()=>{const ta=h("textarea",{style:"position:fixed;opacity:0;left:0;top:0"});ta.value=t;document.body.append(ta);ta.select();let done=false;try{done=document.execCommand("copy");}catch(e){}ta.remove();if(done)ok();else btn.textContent="Salin manual dari teks lengkap";};
+  if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(t).then(ok,old);else old();
+}
+function promptCard(){
+  const pre=h("pre",{style:"display:none"},PROMPT_GIM);
+  const copy=h("button",{class:"btn sm"},"📋 Salin prompt");copy.onclick=()=>copyText(PROMPT_GIM,copy);
+  const tog=h("button",{class:"btn ghost sm"},"Lihat teks lengkap");
+  tog.onclick=()=>{const o=pre.style.display==="none";pre.style.display=o?"block":"none";tog.textContent=o?"Sembunyikan teks":"Lihat teks lengkap";sfx.click();};
+  return h("div",{class:"pcard"},
+    h("span",{class:"tag"},"03 · GIM"),
+    h("h3",null,"Prompt Rancangan Gim Edukasi Berbasis Peta"),
+    h("p",{class:"note"},"Prompt siap pakai untuk membuat rancangan gim edukasi (zona, misi, bank soal 5 jenis, Boss Battle HOTS, panduan guru). Ganti isian di dalam [ ... ] lalu tempel ke asisten AI. Pengembang: Mulyanah, S. Pd."),
+    h("div",{class:"row",style:"justify-content:flex-start"},copy,tog),pre);
+}
+function promptModal(){modal([h("h2",null,"📚 Bank Prompt"),promptCard(),h("div",{class:"row",style:"margin-top:14px"},h("button",{class:"btn",onclick:closeModal},"Tutup"))]);}
+
+/* ==================== WIRING ==================== */
+$("#btnStart").onclick=()=>{
+  const nm=$("#nameIn").value.trim();
+  if(!nm&&!S.name){$("#nameIn").focus();$("#nameIn").placeholder="Nama wajib diisi dahulu ya...";sfx.no();return;}
+  if(nm&&nm!==S.name){if(S.name&&crystals()>0&&!confirm("Nama berbeda. Mulai dari awal dengan nama baru?"))return;if(nm!==S.name){S=fresh(nm);}}
+  save();sfx.unlock();backToMap();
+};
+$("#btnRules1").onclick=$("#btnRules2").onclick=rulesModal;
+$("#btnDev1").onclick=$("#btnDev2").onclick=$("#btnFDev").onclick=devModal;
+$("#btnSfx").onclick=()=>{S.sound=!S.sound;save();syncAudioBtns();sfx.click();};
+$("#btnMusic").onclick=()=>{S.music=!S.music;save();syncAudioBtns();if(S.music){armed=true;startMusic();}else stopMusic();};
+$("#btnPrompt1").onclick=promptModal;
+syncAudioBtns();
+$("#btnReset").onclick=()=>{if(confirm("Hapus semua progres dan mulai dari awal?")){const nm=S.name,sd=S.sound;S=fresh(nm);S.sound=sd;save();renderMap();}};
+$("#btnBack").onclick=()=>{if(confirm("Kembali ke peta? Progres zona yang sedang dimainkan tidak disimpan.")){backToMap();}};
+$("#btnPrint").onclick=()=>window.print();
+$("#btnFMap").onclick=backToMap;
+if(load()&&S.name){$("#nameIn").value=S.name;$("#contNote").textContent=`Progres tersimpan: ${crystals()} Kristal, ${total()} poin. Tekan Mulai untuk melanjutkan.`;}
+</script>
+</body>
+</html>
